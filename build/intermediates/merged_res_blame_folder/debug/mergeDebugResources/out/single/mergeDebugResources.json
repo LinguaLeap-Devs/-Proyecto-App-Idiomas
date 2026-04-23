@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.lingualeap-debug-53:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "com.lingualeap-main-55:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.lingualeap-debug-53:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "com.lingualeap-main-55:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "C:\\Users\\segun\\.gradle\\daemon\\9.0.0\\com.lingualeap-debug-53:\\drawable_logo.png.flat",
+        "source": "C:\\Users\\segun\\.gradle\\daemon\\9.0.0\\com.lingualeap-main-55:\\drawable\\logo.png"
+    },
+    {
+        "merged": "C:\\Users\\segun\\.gradle\\daemon\\9.0.0\\com.lingualeap-debug-53:\\drawable_logo_app.xml.flat",
+        "source": "C:\\Users\\segun\\.gradle\\daemon\\9.0.0\\com.lingualeap-main-55:\\drawable\\logo_app.xml"
+    }
+]
