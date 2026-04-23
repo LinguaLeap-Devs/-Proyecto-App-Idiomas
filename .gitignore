@@ -1,0 +1,14 @@
+# Ignorar carpetas de compilación y temporales
+build/
+**/build/
+.gradle/
+.idea/
+*.iml
+local.properties
+*.hprof
+
+# Archivos de sistema
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
