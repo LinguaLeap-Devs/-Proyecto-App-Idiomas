@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -111,8 +112,7 @@ fun LinguaLeapApp() {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
-                },
-                onBack = { navController.popBackStack() }
+                }
             )
         }
 
@@ -124,7 +124,7 @@ fun LinguaLeapApp() {
                     navController.navigate(Screen.Lesson.createRoute(lesson.id))
                 },
                 onLogout      = {
-                    authViewModel.logout()
+                    authViewModel.cerrarSesion()
                     navController.navigate(Screen.Splash.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                     }
@@ -138,7 +138,7 @@ fun LinguaLeapApp() {
             arguments = listOf(navArgument("lessonId") { type = NavType.IntType })
         ) { backStackEntry ->
             val lessonId = backStackEntry.arguments?.getInt("lessonId")
-            val userState by authViewModel.currentUser.collectAsState()
+            val userState by authViewModel.usuarioActual.collectAsStateWithLifecycle()
             val userLanguage = userState?.selectedLang?.code ?: "en"
             
             // Buscamos los datos de la lección en nuestra "base de datos" estática

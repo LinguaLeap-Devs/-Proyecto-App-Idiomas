@@ -28,24 +28,18 @@ import com.lingualeap.ui.theme.LinguaColors
 import com.lingualeap.ui.theme.LinguaSpacing
 import com.lingualeap.viewmodel.AuthViewModel
 
-/**
- * Pantalla de Registro - REVISIÓN CRÍTICA:
- * 1. Coherencia: Se alinea visualmente con LoginScreen usando el logo circular.
- * 2. UX: Se mejora la disposición de los campos para evitar fatiga visual.
- * 3. Feedback: Gestión de errores clara y amigable.
- */
 @Composable
 fun RegisterScreen(
     viewModel: AuthViewModel,
     onNavigateToLogin: () -> Unit,
     onNavigateBack: () -> Unit,
-    onRegisterSuccess: () -> Unit // Este llevará ahora al Quiz
+    onRegisterSuccess: () -> Unit
 ) {
     var name     by remember { mutableStateOf("") }
     var email    by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val authState by viewModel.authState.collectAsStateWithLifecycle()
+    val authState by viewModel.estadoAuth.collectAsStateWithLifecycle()
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -73,7 +67,6 @@ fun RegisterScreen(
             )
         }
 
-        // ── BRANDING ──────────────────────────────
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -107,10 +100,9 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(LinguaSpacing.Large))
 
-        // ── CAMPOS DE ENTRADA ────────────────────
         LinguaTextField(
             value = name,
-            onValueChange = { name = it; viewModel.clearError() },
+            onValueChange = { name = it; viewModel.limpiarError() },
             label = "Nombre completo",
             placeholder = "Tu nombre",
             errorMessage = if (errorMessage?.contains("nombre", true) == true) errorMessage else null
@@ -120,7 +112,7 @@ fun RegisterScreen(
 
         LinguaTextField(
             value = email,
-            onValueChange = { email = it; viewModel.clearError() },
+            onValueChange = { email = it; viewModel.limpiarError() },
             label = "Email",
             placeholder = "ejemplo@correo.com",
             keyboardType = KeyboardType.Email,
@@ -131,7 +123,7 @@ fun RegisterScreen(
 
         LinguaTextField(
             value = password,
-            onValueChange = { password = it; viewModel.clearError() },
+            onValueChange = { password = it; viewModel.limpiarError() },
             label = "Contraseña",
             placeholder = "Mínimo 6 caracteres",
             isPassword = true,
@@ -150,10 +142,9 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(LinguaSpacing.Large))
 
-        // ── BOTÓN DE ACCIÓN ──────────────────────
         LinguaButton(
             text = "Crear cuenta",
-            onClick = { viewModel.register(name.trim(), email.trim(), password) },
+            onClick = { viewModel.registrar(name.trim(), email.trim(), password) },
             isLoading = isLoading,
             enabled = name.isNotBlank() && email.isNotBlank() && password.length >= 6
         )

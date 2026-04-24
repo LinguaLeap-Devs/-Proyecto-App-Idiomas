@@ -27,9 +27,6 @@ import com.lingualeap.ui.components.LinguaButton
 import com.lingualeap.ui.theme.LinguaColors
 import java.util.*
 
-/**
- * LESSON SCREEN - Implementación de Skill Multimedia Bilingüe Avanzada
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonScreen(
@@ -43,19 +40,15 @@ fun LessonScreen(
     var isAnswerChecked by remember { mutableStateOf(false) }
     var isCorrect by remember { mutableStateOf(false) }
 
-    // Inicialización del motor TTS
     val tts = remember {
         TextToSpeech(context) { _ -> }
     }
 
-    // Skill Multimedia: Procesamiento de voz bilingüe inteligente
     val speakSmart = { text: String ->
-        // Dividimos el texto por comillas para separar instrucciones de palabras clave
-        val segments = text.split(Regex("['\"“”]")).filter { it.isNotBlank() }
+        val segments = text.split(Regex("[\'\"“”]")).filter { it.isNotBlank() }
         
         segments.forEachIndexed { index, segment ->
             val lower = segment.lowercase()
-            // Detectamos si el segmento es español por palabras clave o caracteres especiales
             val isSpanish = lower.contains(Regex("[¿áéíóúñ]")) || 
                             lower.contains("como") || 
                             lower.contains("dice") || 
@@ -64,7 +57,6 @@ fun LessonScreen(
 
             tts.language = if (isSpanish) Locale("es", "ES") else Locale.US
             
-            // El primer segmento limpia la cola, los siguientes se añaden
             val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
             tts.speak(segment, queueMode, null, null)
         }

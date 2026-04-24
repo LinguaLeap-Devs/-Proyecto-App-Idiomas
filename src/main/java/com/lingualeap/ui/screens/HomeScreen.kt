@@ -20,13 +20,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lingualeap.data.model.AppData
 import com.lingualeap.data.model.Lesson
-import com.lingualeap.data.model.LessonLevel
 import com.lingualeap.data.model.User
 import com.lingualeap.ui.components.LessonNode
 import com.lingualeap.ui.components.UserAvatar
@@ -45,7 +43,7 @@ fun HomeScreen(
     onLogout     : () -> Unit          // Acción para cerrar sesión y volver al inicio
 ) {
     // Obtenemos los datos del usuario logueado en tiempo real
-    val usuarioActual by viewModel.currentUser.collectAsStateWithLifecycle()
+    val usuarioActual by viewModel.usuarioActual.collectAsStateWithLifecycle()
     
     // Estado para saber qué pestaña de la barra inferior está seleccionada (0 a 3)
     var seccionActiva by remember { mutableStateOf(0) }
@@ -264,117 +262,90 @@ private fun VistaProgreso(xpTotalAcumulada: Int) {
  */
 @Composable
 private fun VistaPerfil(usuario: User?, onLogout: () -> Unit) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp), 
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        item {
-            Spacer(Modifier.height(32.dp))
-            UserAvatar(initials = usuario?.avatarInitials ?: "?", size = 100)
-            Spacer(Modifier.height(16.dp))
-            Text(text = usuario?.name ?: "Usuario", fontSize = 24.sp, fontWeight = FontWeight.Black)
-            Text(text = usuario?.email ?: "", fontSize = 14.sp, color = Color.Gray)
-            Spacer(Modifier.height(32.dp))
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+        Text("Perfil", fontSize = 28.sp, fontWeight = FontWeight.Black)
+        Spacer(Modifier.height(32.dp))
+        
+        // Info principal del perfil
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            UserAvatar(initials = usuario?.avatarInitials ?: "?", size = 80)
+            Spacer(Modifier.width(20.dp))
+            Column {
+                Text(usuario?.name ?: "Usuario", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text(usuario?.email ?: "", fontSize = 14.sp, color = Color.Gray)
+            }
         }
         
-        // Cuadro de estadísticas: Racha, XP Idioma actual
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(), 
-                shape = RoundedCornerShape(24.dp), 
-                colors = CardDefaults.cardColors(containerColor = Color.White)
-            ) {
-                Row(modifier = Modifier.fillMaxWidth().padding(20.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    PerfilStatItem("🔥", "${usuario?.streakDays ?: 0}", "Días")
-                    PerfilStatItem("⚡", "${usuario?.totalXp ?: 0}", "XP")
-                    PerfilStatItem(usuario?.selectedLang?.flag ?: "🌍", usuario?.selectedLang?.name ?: "—", "Idioma")
-                }
-            }
-            Spacer(Modifier.height(24.dp))
-        }
-
-        // Sección de medallas (Logros)
-        item {
-            Row(modifier = Modifier.fillMaxWidth()) { Text("Mis Medallas", fontWeight = FontWeight.Bold, fontSize = 18.sp) }
-            Spacer(Modifier.height(12.dp))
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                val misMedallas = listOf("🌱", "🔥", "🎓", "🏆")
-                misMedallas.forEach { emojiMedalla ->
-                    Box(
-                        modifier = Modifier.size(60.dp).clip(CircleShape).background(Color.White), 
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(emojiMedalla, fontSize = 24.sp)
-                    }
-                }
-            }
-            Spacer(Modifier.height(32.dp))
-        }
-
-        // Botón de Cerrar Sesión
-        item {
-            Button(
-                onClick = onLogout, 
-                modifier = Modifier.fillMaxWidth().height(56.dp), 
-                shape = RoundedCornerShape(16.dp), 
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEBEE), contentColor = Color.Red)
-            ) {
-                Icon(Icons.AutoMirrored.Rounded.Logout, contentDescription = null)
-                Spacer(Modifier.width(12.dp))
-                Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.height(24.dp))
-        }
-    }
-}
-
-// ── COMPONENTES INTERNOS DE APOYO (Solo se usan en este archivo) ─────────
-
-/**
- * El encabezado azul/blanco que muestra el progreso del día.
- */
-@Composable
-private fun HeaderConMetaDiaria(nombre: String, iniciales: String, xpActual: Int, metaXP: Int, bandera: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-            .padding(24.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            UserAvatar(initials = iniciales, size = 52)
-            Spacer(Modifier.width(16.dp))
-            Column {
-                Text(text = "¡Hola, ${nombre.split(" ").first()}!", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold)
-                Text(text = "Meta: $xpActual / $metaXP XP", fontSize = 12.sp, color = Color.Gray)
-            }
-            Spacer(Modifier.weight(1f))
-            Text(bandera, fontSize = 28.sp)
-        }
+        Spacer(Modifier.height(40.dp))
+        
+        Text("Medallas y Logros", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
-        // Barra de progreso física
-        LinearProgressIndicator(
-            progress = { xpActual.toFloat() / metaXP.toFloat() }, 
-            modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape), 
-            color = LinguaColors.Primary, 
-            trackColor = Color(0xFFF1F5F9)
-        )
+        
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            LogroBadge("Fuego", "🔥", "3 días")
+            LogroBadge("Búho", "🦉", "100 XP")
+            LogroBadge("Rayo", "⚡", "Perfecto")
+        }
+        
+        Spacer(Modifier.weight(1f))
+        
+        // Botón de Cerrar Sesión
+        Button(
+            onClick = onLogout,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEBEE), contentColor = Color(0xFFD32F2F)),
+            shape = RoundedCornerShape(16.dp),
+            elevation = null
+        ) {
+            Icon(Icons.AutoMirrored.Rounded.Logout, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("CERRAR SESIÓN", fontWeight = FontWeight.Bold)
+        }
     }
 }
 
-/**
- * Un item pequeño para las estadísticas del perfil (Icono + Valor + Texto).
- */
 @Composable
-private fun PerfilStatItem(emoji: String, valor: String, etiqueta: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = emoji, fontSize = 24.sp)
-        Text(text = valor, fontSize = 18.sp, fontWeight = FontWeight.Black)
-        Text(text = etiqueta, fontSize = 12.sp, color = Color.Gray)
+fun LogroBadge(titulo: String, emoji: String, sub: String) {
+    Column(
+        modifier = Modifier.width(80.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier.size(64.dp).background(Color.White, CircleShape).shadow(2.dp, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(emoji, fontSize = 28.sp)
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(titulo, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(sub, fontSize = 10.sp, color = Color.Gray)
     }
 }
 
-/**
- * Clase de datos para definir los elementos del menú inferior.
- */
-private data class MenuTab(val titulo: String, val icon: ImageVector, val id: Int)
+@Composable
+fun HeaderConMetaDiaria(nombre: String, iniciales: String, xpActual: Int, metaXP: Int, bandera: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(24.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        UserAvatar(initials = iniciales, size = 48)
+        Spacer(Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text("¡Hola, $nombre! $bandera", fontSize = 18.sp, fontWeight = FontWeight.Black)
+            Spacer(Modifier.height(4.dp))
+            LinearProgressIndicator(
+                progress = { xpActual.toFloat() / metaXP.toFloat() },
+                modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape),
+                color = LinguaColors.Primary,
+                trackColor = Color(0xFFE2E8F0)
+            )
+        }
+        Spacer(Modifier.width(16.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("$xpActual/$metaXP", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = LinguaColors.Primary)
+            Text("XP HOY", fontSize = 9.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+data class MenuTab(val titulo: String, val icon: ImageVector, val id: Int)

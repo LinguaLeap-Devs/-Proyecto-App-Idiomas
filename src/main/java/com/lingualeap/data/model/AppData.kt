@@ -2,27 +2,29 @@ package com.lingualeap.data.model
 
 /**
  * ────────────────────────────────────────────────────────────────────────────
- * APP DATA - Base de datos estática
+ * APP DATA - Base de datos estática mejorada (Honestidad Técnica)
  * ────────────────────────────────────────────────────────────────────────────
- * He añadido más lecciones y niveles para que la experiencia sea más completa.
  */
 object AppData {
 
     val availableLanguages: List<Language> = listOf(
-        Language(code = "en", name = "Inglés", flag = "🇺🇸", color = 0xFF1565C0, totalLessons = 20),
-        Language(code = "fr", name = "Francés", flag = "🇫🇷", color = 0xFFD32F2F, totalLessons = 18),
-        Language(code = "pt", name = "Portugués", flag = "🇧🇷", color = 0xFF2E7D32, totalLessons = 16)
+        Language(code = "en", name = "Inglés", flag = "🇺🇸", color = 0xFF1565C0, totalLessons = 4),
+        Language(code = "fr", name = "Francés", flag = "🇫🇷", color = 0xFFD32F2F, totalLessons = 0),
+        Language(code = "pt", name = "Portugués", flag = "🇧🇷", color = 0xFF2E7D32, totalLessons = 0)
     )
 
+    /**
+     * Devuelve lecciones solo si existen para el idioma solicitado.
+     * 🟢 MEJORA DE EXCELENCIA: No más fallbacks engañosos a inglés.
+     */
     fun getLessonsForLanguage(langCode: String): List<Lesson> {
         return when (langCode) {
             "en" -> getEnglishLessons()
-            else -> getEnglishLessons() // Por ahora usamos inglés para todos
+            else -> emptyList() // Retornamos lista vacía para idiomas sin contenido
         }
     }
 
     private fun getEnglishLessons(): List<Lesson> = listOf(
-        // NIVEL 1: PRINCIPIANTE
         Lesson(
             id          = 1,
             title       = "Saludos",
@@ -39,7 +41,6 @@ object AppData {
                 Question(3, "Traduce 'Good morning':", listOf("Buenas noches", "Buenos días", "Hola"), "Buenos días")
             )
         ),
-        // NIVEL 2: BÁSICO
         Lesson(
             id          = 2,
             title       = "Números",
@@ -54,7 +55,6 @@ object AppData {
                 Question(5, "¿Cómo se escribe 'Dos'?", listOf("One", "Three", "Two"), "Two")
             )
         ),
-        // NIVEL 3: ELEMENTARY
         Lesson(
             id          = 3,
             title       = "La Familia",
@@ -69,7 +69,6 @@ object AppData {
                 Question(7, "¿Cómo se dice 'Hermano'?", listOf("Sister", "Brother", "Father"), "Brother")
             )
         ),
-        // NIVEL 4: INTERMEDIO
         Lesson(
             id          = 4,
             title       = "En el restaurante",

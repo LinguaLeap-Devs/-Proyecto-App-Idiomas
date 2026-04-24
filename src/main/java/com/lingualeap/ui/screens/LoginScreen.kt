@@ -26,16 +26,8 @@ import com.lingualeap.data.model.AuthState
 import com.lingualeap.ui.components.*
 import com.lingualeap.ui.theme.LinguaColors
 import com.lingualeap.ui.theme.LinguaSpacing
-import com.lingualeap.ui.theme.LinguaLeapTheme
 import com.lingualeap.viewmodel.AuthViewModel
-import androidx.compose.ui.tooling.preview.Preview
 
-/**
- * Pantalla de inicio de sesión - CRÍTICA Y MEJORA:
- * 1. Integración de Marca: Se añade el logo circular de Glossa.
- * 2. Jerarquía Visual: Se ajustan los pesos tipográficos para mayor legibilidad.
- * 3. Diseño "Soft": Se alinea con el estilo amigable de la HomeScreen.
- */
 @Composable
 fun LoginScreen(
     viewModel           : AuthViewModel,
@@ -46,7 +38,7 @@ fun LoginScreen(
     var email    by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val authState by viewModel.authState.collectAsStateWithLifecycle()
+    val authState by viewModel.estadoAuth.collectAsStateWithLifecycle()
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Success) {
@@ -66,7 +58,6 @@ fun LoginScreen(
     ) {
         Spacer(Modifier.height(LinguaSpacing.Medium))
 
-        // Botón volver más integrado
         IconButton(onClick = onNavigateBack) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -77,8 +68,6 @@ fun LoginScreen(
 
         Spacer(Modifier.height(LinguaSpacing.Medium))
 
-        // ── BRANDING (NUEVO) ──────────────────────
-        // 🔄 CAMBIO: Se integra el logo para dar identidad a la pantalla
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -118,12 +107,11 @@ fun LoginScreen(
         
         Spacer(Modifier.height(LinguaSpacing.Huge))
 
-        // ── CAMPOS DE ENTRADA ────────────────────
         LinguaTextField(
             value         = email,
             onValueChange = {
                 email = it
-                viewModel.clearError()
+                viewModel.limpiarError()
             },
             label        = "Email",
             placeholder  = "ejemplo@correo.com",
@@ -137,7 +125,7 @@ fun LoginScreen(
             value         = password,
             onValueChange = {
                 password = it
-                viewModel.clearError()
+                viewModel.limpiarError()
             },
             label        = "Contraseña",
             placeholder  = "Tu clave secreta",
@@ -167,7 +155,6 @@ fun LoginScreen(
 
         Spacer(Modifier.height(LinguaSpacing.Large))
 
-        // ── BOTONES DE ACCIÓN ────────────────────
         LinguaButton(
             text      = "Entrar",
             onClick   = { viewModel.login(email.trim(), password) },
@@ -176,18 +163,15 @@ fun LoginScreen(
         )
 
         Spacer(Modifier.height(LinguaSpacing.Large))
-
         DividerWithText(text = "o usa tu cuenta social")
-
         Spacer(Modifier.height(LinguaSpacing.Medium))
 
-        // 🔄 CAMBIO: Botón de Google más limpio (se quitó el emoji azul)
         LinguaOutlineButton(
             text    = "Continuar con Google",
             onClick = { /* TODO */ }
         )
 
-        Spacer(Modifier.weight(1f)) // Empuja el registro hacia abajo
+        Spacer(Modifier.weight(1f))
 
         Row(
             modifier = Modifier
@@ -208,18 +192,5 @@ fun LoginScreen(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginPreview() {
-    LinguaLeapTheme {
-        LoginScreen(
-            viewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-            onNavigateToRegister = {},
-            onNavigateBack = {},
-            onLoginSuccess = {}
-        )
     }
 }
