@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.lingualeap.app-mergeDebugResources-78:/values-watch-v21/values-watch-v21.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\segun\\.gradle\\caches\\8.13\\transforms\\f1b45fc7a1128a1fe684f9b1e9c88a5e\\transformed\\appcompat-1.7.0\\res\\values-watch-v21\\values-watch-v21.xml",
+                    "from": {
+                        "startLines": "2,6,10",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,271,499",
+                        "endLines": "5,9,13",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "266,494,724"
+                    }
+                }
+            ]
+        }
+    ]
+}

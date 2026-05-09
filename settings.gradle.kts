@@ -1,15 +1,12 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
+}
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -20,5 +17,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "LinguaLeap"
-// No incluimos :app aquí porque este archivo ya está dentro de la carpeta app, 
-// lo que la convierte en el proyecto raíz según tu estructura actual.
+include(":app")

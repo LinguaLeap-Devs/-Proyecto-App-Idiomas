@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "265537801904",
+    "project_id": "lingualeap-2d96d",
+    "storage_bucket": "lingualeap-2d96d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:265537801904:android:29998fa23f8c24a1f37575",
+        "android_client_info": {
+          "package_name": "com.lingualeap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "265537801904-oqr4er2ivns0form2b6rcvo9hffd8khk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lingualeap",
+            "certificate_hash": "a56ecf61394c6431472eda921ac765abaa1e45d5"
+          }
+        },
+        {
+          "client_id": "265537801904-dpro7qvj9mga5on6qkv95j81t1dhf9ea.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjCUTCpDZPetW78UX2U-e0qwngoCizzTI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "265537801904-dpro7qvj9mga5on6qkv95j81t1dhf9ea.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema compatible con Jetpack Compose y Material 3 -->
+    <style name="Theme.LinguaLeap" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Color de la barra de estado para que coincida con enableEdgeToEdge -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

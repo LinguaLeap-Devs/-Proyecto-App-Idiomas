@@ -1,0 +1,57 @@
+{
+  "languages": [
+    {
+      "code": "en",
+      "name": "Inglés",
+      "flag": "🇺🇸",
+      "color": "4279526848",
+      "lessons": [
+        {
+          "id": 1,
+          "title": "Saludos Básicos",
+          "description": "Aprende a decir hola y adiós",
+          "emoji": "👋",
+          "level": "BEGINNER",
+          "durationMin": 3,
+          "xpReward": 10,
+          "questions": [
+            { "id": 1, "text": "¿Cómo se dice 'Hola'?", "options": ["Hello", "Bye", "Water"], "correctAnswer": "Hello" },
+            { "id": 2, "text": "¿Cómo se dice 'Adiós'?", "options": ["Hi", "Goodbye", "Bread"], "correctAnswer": "Goodbye" }
+          ]
+        },
+        {
+          "id": 2,
+          "title": "Los Números",
+          "description": "Cuenta del 1 al 10",
+          "emoji": "🔢",
+          "level": "BEGINNER",
+          "durationMin": 5,
+          "xpReward": 15,
+          "questions": [
+            { "id": 3, "text": "¿Qué número es 'Seven'?", "options": ["5", "7", "9"], "correctAnswer": "7" }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "fr",
+      "name": "Francés",
+      "flag": "🇫🇷",
+      "color": "4292022063",
+      "lessons": [
+        {
+          "id": 1,
+          "title": "Les Salutations",
+          "description": "Saludos en francés",
+          "emoji": "🇫🇷",
+          "level": "BEGINNER",
+          "durationMin": 4,
+          "xpReward": 12,
+          "questions": [
+            { "id": 1, "text": "¿Cómo se dice 'Hola'?", "options": ["Bonjour", "Merci", "Oui"], "correctAnswer": "Bonjour" }
+          ]
+        }
+      ]
+    }
+  ]
+}

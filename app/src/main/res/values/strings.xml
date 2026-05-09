@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">LinguaLeap</string>
+    <string name="default_web_client_id">265537801904-dpro7qvj9mga5on6qkv95j81t1dhf9ea.apps.googleusercontent.com</string>
+
+    <!-- Login Screen -->
+    <string name="login_back_content_description">Volver</string>
+    <string name="login_welcome">¡Bienvenido</string>
+    <string name="login_welcome_back">\nde vuelta!</string>
+    <string name="login_subtitle">Tu progreso te espera. Entra para continuar.</string>
+    <string name="login_email_label">Email</string>
+    <string name="login_email_placeholder">ejemplo@correo.com</string>
+    <string name="login_password_label">Contraseña</string>
+    <string name="login_password_placeholder">Tu clave secreta</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_button_enter">ENTRAR</string>
+    <string name="login_new_user_question">¿Eres nuevo?</string>
+    <string name="login_create_account">Crea una cuenta</string>
+
+    <!-- Register Screen -->
+    <string name="register_title">Crea tu cuenta</string>
+    <string name="register_subtitle">Únete a la legión de LinguaLeap</string>
+    <string name="register_name_label">Nombre completo</string>
+    <string name="register_name_placeholder">Tu nombre</string>
+    <string name="register_password_placeholder">Mínimo 6 caracteres</string>
+    <string name="register_button_create">CREAR CUENTA</string>
+    <string name="register_terms_agreement">Al registrarte, aceptas nuestros Términos y Condiciones</string>
+    <string name="register_has_account_question">¿Ya tienes cuenta? </string>
+    <string name="register_login_action">Inicia sesión</string>
+</resources>
