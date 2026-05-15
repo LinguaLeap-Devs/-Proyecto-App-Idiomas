@@ -1,0 +1,16 @@
+# Archivos de Gradle y compilación
+.gradle/
+build/
+capture/
+app/build/
+
+# Archivos de Android Studio / IntelliJ
+*.iml
+.idea/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+
+# Archivos locales y de sistema
+local.properties
+.DS_Store
