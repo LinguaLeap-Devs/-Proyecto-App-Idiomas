@@ -45,7 +45,8 @@ data class User(
     val todayXp: Int = 0,
     val currentLeague: String = "BRONZE",
     val weeklyXp: Int = 0,
-    val unlockedBadges: List<String> = listOf()
+    val unlockedBadges: List<String> = listOf(),
+    val friendsIds: List<String> = listOf() // IDs de amigos para el ranking social
 )
 
 // ── DESAFÍOS (CHALLENGES) ────────────────

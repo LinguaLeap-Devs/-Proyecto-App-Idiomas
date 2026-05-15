@@ -32,17 +32,30 @@ private val BronzeColor   = Color(0xFFCD7F32)
 private val SilverColor   = Color(0xFF94A3B8)
 
 enum class RankingFilter { WEEK, MONTH, ALL_TIME }
+enum class RankingScope { GLOBAL, FRIENDS }
 
 @Composable
 fun VistaRanking(viewModel: AuthViewModel) {
     val usersRanking by viewModel.rankingUsuarios.collectAsStateWithLifecycle()
     val usuarioActual by viewModel.usuarioActual.collectAsStateWithLifecycle()
     var selectedFilter by remember { mutableStateOf(RankingFilter.WEEK) }
+    var selectedScope by remember { mutableStateOf(RankingScope.GLOBAL) }
+    var showSearchDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.cargarRanking() }
 
-    val top3 = usersRanking.take(3)
-    val maxXp = usersRanking.firstOrNull()?.totalXp ?: 1
+    val displayedRanking = remember(usersRanking, selectedScope, usuarioActual) {
+        if (selectedScope == RankingScope.GLOBAL) {
+            usersRanking
+        } else {
+            usersRanking.filter { user ->
+                user.id == usuarioActual?.id || usuarioActual?.friendsIds?.contains(user.id) == true
+            }
+        }
+    }
+
+    val top3 = displayedRanking.take(3)
+    val maxXp = displayedRanking.firstOrNull()?.totalXp ?: 1
 
     Column(
         modifier = Modifier
@@ -53,7 +66,9 @@ fun VistaRanking(viewModel: AuthViewModel) {
         // Header + Tabs
         RankingHeader(
             selectedTab = selectedFilter,
-            onTabSelected = { selectedFilter = it }
+            onTabSelected = { selectedFilter = it },
+            selectedScope = selectedScope,
+            onScopeSelected = { selectedScope = it }
         )
 
         // Podium Section
@@ -78,7 +93,7 @@ fun VistaRanking(viewModel: AuthViewModel) {
             )
             Spacer(Modifier.height(12.dp))
 
-            usersRanking.forEachIndexed { index, user ->
+            displayedRanking.forEachIndexed { index, user ->
                 LeaderboardRow(
                     rank = index + 1,
                     user = user,
@@ -89,22 +104,32 @@ fun VistaRanking(viewModel: AuthViewModel) {
             }
 
             // Placeholder si hay pocos usuarios
-            if (usersRanking.size < 4) {
-                LeaderboardPlaceholderRow(rank = usersRanking.size + 1)
+            if (displayedRanking.size < 4) {
+                LeaderboardPlaceholderRow(
+                    rank = displayedRanking.size + 1,
+                    onInviteClick = { showSearchDialog = true }
+                )
             }
 
             Spacer(Modifier.height(16.dp))
 
             // Motivational banner
             if (usuarioActual != null) {
-                val myRank = usersRanking.indexOfFirst { it.id == usuarioActual?.id } + 1
+                val myRank = displayedRanking.indexOfFirst { it.id == usuarioActual?.id } + 1
                 if (myRank > 0) {
                     MotivationalBanner(rank = myRank)
                 }
             }
 
-            Spacer(Modifier.height(30.dp))
+        Spacer(Modifier.height(30.dp))
         }
+    }
+
+    if (showSearchDialog) {
+        SearchFriendDialog(
+            viewModel = viewModel,
+            onDismiss = { showSearchDialog = false }
+        )
     }
 }
 
@@ -112,6 +137,8 @@ fun VistaRanking(viewModel: AuthViewModel) {
 fun RankingHeader(
     selectedTab: RankingFilter,
     onTabSelected: (RankingFilter) -> Unit,
+    selectedScope: RankingScope,
+    onScopeSelected: (RankingScope) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -157,6 +184,41 @@ fun RankingHeader(
 
             Spacer(Modifier.height(16.dp))
 
+            // -- Pestañas Global / Amigos --
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White.copy(alpha = 0.08f))
+                    .padding(3.dp)
+            ) {
+                listOf(
+                    RankingScope.GLOBAL to "🌎 Global",
+                    RankingScope.FRIENDS to "👥 Mis Amigos"
+                ).forEach { (scope, label) ->
+                    val isSelected = selectedScope == scope
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isSelected) SunYellow.copy(alpha = 0.25f) else Color.Transparent)
+                            .clickable { onScopeSelected(scope) }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text       = label,
+                            color      = if (isSelected) SunYellow else TextSecondary,
+                            fontSize   = 14.sp,
+                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // -- Filtros de Tiempo --
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -407,13 +469,20 @@ fun LeaderboardRow(
 }
 
 @Composable
-fun LeaderboardPlaceholderRow(rank: Int, modifier: Modifier = Modifier) {
+fun LeaderboardPlaceholderRow(
+    rank: Int, 
+    onInviteClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(CardBg.copy(alpha = 0.45f))
             .border(1.dp, Color.White.copy(alpha = 0.04f), RoundedCornerShape(14.dp))
+            .clickable {
+                onInviteClick()
+            }
             .padding(horizontal = 14.dp, vertical = 11.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -450,6 +519,113 @@ fun MotivationalBanner(rank: Int, modifier: Modifier = Modifier) {
         Column {
             Text(message.first, color = SunYellow, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold)
             Text(message.second, color = TextSecondary, fontSize = 11.sp, modifier = Modifier.padding(top = 3.dp))
+        }
+    }
+}
+
+@Composable
+fun SearchFriendDialog(
+    viewModel: AuthViewModel,
+    onDismiss: () -> Unit
+) {
+    val searchResults by viewModel.resultadosBusqueda.collectAsStateWithLifecycle()
+    var searchQuery by remember { mutableStateOf("") }
+    val usuarioActual by viewModel.usuarioActual.collectAsStateWithLifecycle()
+
+    androidx.compose.ui.window.Dialog(onDismissRequest = {
+        viewModel.limpiarBusqueda()
+        onDismiss()
+    }) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(SurfaceBg)
+                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
+                .padding(20.dp)
+        ) {
+            Column {
+                Text("Buscar amigos", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(16.dp))
+                
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { 
+                        searchQuery = it
+                        viewModel.buscarUsuarios(it)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Escribe un nombre...", color = TextSecondary) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = NeonCyan,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.2f),
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        cursorColor = NeonCyan
+                    ),
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                if (searchResults.isEmpty() && searchQuery.isNotBlank()) {
+                    Text("No se encontraron usuarios", color = TextSecondary, fontSize = 14.sp)
+                }
+
+                androidx.compose.foundation.lazy.LazyColumn(
+                    modifier = Modifier.heightIn(max = 300.dp)
+                ) {
+                    items(searchResults.size) { index ->
+                        val user = searchResults[index]
+                        val isFriend = usuarioActual?.friendsIds?.contains(user.id) == true
+                        
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(CardBg)
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(modifier = Modifier.size(40.dp).background(Color(0xFF475569), CircleShape), contentAlignment = Alignment.Center) {
+                                Text(user.avatarInitials, color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(user.name, color = TextPrimary, fontWeight = FontWeight.Bold)
+                                Text("${user.totalXp} XP", color = NeonCyan, fontSize = 12.sp)
+                            }
+                            
+                            if (isFriend) {
+                                Text("Añadido", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            } else {
+                                Button(
+                                    onClick = { viewModel.agregarAmigo(user.id) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = AccentBlue),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("Añadir", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(Modifier.height(16.dp))
+                
+                TextButton(
+                    onClick = { 
+                        viewModel.limpiarBusqueda()
+                        onDismiss()
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Cerrar", color = NeonCyan)
+                }
+            }
         }
     }
 }

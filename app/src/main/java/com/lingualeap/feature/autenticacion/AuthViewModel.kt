@@ -47,6 +47,12 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _rankingUsuarios = MutableStateFlow<List<User>>(emptyList())
     val rankingUsuarios: StateFlow<List<User>> = _rankingUsuarios.asStateFlow()
 
+    private val _rankingAmigos = MutableStateFlow<List<User>>(emptyList())
+    val rankingAmigos: StateFlow<List<User>> = _rankingAmigos.asStateFlow()
+
+    private val _resultadosBusqueda = MutableStateFlow<List<User>>(emptyList())
+    val resultadosBusqueda: StateFlow<List<User>> = _resultadosBusqueda.asStateFlow()
+
     init {
         val userFirebase = auth.currentUser
         if (userFirebase != null) {
@@ -143,6 +149,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 themeManager.saveDarkMode(usuario.darkModeEnabled)
                 
                 verificarYReiniciarRachaSiEsNecesario(usuario)
+                cargarRanking()
+                cargarRankingAmigos()
             } else {
                 _estadoAuth.value = AuthState.Error("Perfil no encontrado.")
             }
@@ -321,6 +329,72 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 _rankingUsuarios.value = snapshot.toObjects(User::class.java)
             } catch (e: Exception) { Log.e("AuthViewModel", "Error ranking", e) }
         }
+    }
+
+    fun cargarRankingAmigos() {
+        val usuario = _usuarioActual.value ?: return
+        if (usuario.friendsIds.isEmpty()) {
+            _rankingAmigos.value = listOf(usuario)
+            return
+        }
+        
+        viewModelScope.launch {
+            try {
+                // Incluimos al usuario actual y a sus amigos
+                val idsParaConsultar = usuario.friendsIds + usuario.id
+                val snapshot = db.collection("users")
+                    .whereIn("id", idsParaConsultar)
+                    .get().await()
+                
+                val amigos = snapshot.toObjects(User::class.java)
+                    .sortedByDescending { it.totalXp }
+                
+                _rankingAmigos.value = amigos
+            } catch (e: Exception) { 
+                Log.e("AuthViewModel", "Error ranking amigos", e)
+                _rankingAmigos.value = listOf(usuario)
+            }
+        }
+    }
+
+    fun agregarAmigo(amigoId: String) {
+        val usuario = _usuarioActual.value ?: return
+        if (usuario.friendsIds.contains(amigoId)) return
+        
+        viewModelScope.launch {
+            try {
+                db.collection("users").document(usuario.id)
+                    .update("friendsIds", FieldValue.arrayUnion(amigoId)).await()
+                
+                val nuevaLista = usuario.friendsIds + amigoId
+                _usuarioActual.value = usuario.copy(friendsIds = nuevaLista)
+                cargarRankingAmigos()
+            } catch (e: Exception) { Log.e("AuthViewModel", "Error agregar amigo", e) }
+        }
+    }
+
+    fun buscarUsuarios(query: String) {
+        if (query.isBlank()) {
+            _resultadosBusqueda.value = emptyList()
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val snapshot = db.collection("users")
+                    .orderBy("name")
+                    .startAt(query)
+                    .endAt(query + "\uf8ff")
+                    .limit(10)
+                    .get().await()
+                
+                val result = snapshot.toObjects(User::class.java).filter { it.id != _usuarioActual.value?.id }
+                _resultadosBusqueda.value = result
+            } catch (e: Exception) { Log.e("AuthViewModel", "Error buscando", e) }
+        }
+    }
+
+    fun limpiarBusqueda() {
+        _resultadosBusqueda.value = emptyList()
     }
 
     fun cerrarSesion() { auth.signOut(); _usuarioActual.value = null; _estadoAuth.value = AuthState.Idle }

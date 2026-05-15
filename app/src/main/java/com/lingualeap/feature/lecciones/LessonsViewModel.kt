@@ -14,6 +14,12 @@ import kotlinx.coroutines.tasks.await
 class LessonsViewModel(application: Application) : AndroidViewModel(application) {
     private val db = FirebaseFirestore.getInstance()
 
+    init {
+        viewModelScope.launch {
+            inyectarDatosFirebase()
+        }
+    }
+
     private val _lecciones = MutableStateFlow<List<Lesson>>(emptyList())
     val lecciones: StateFlow<List<Lesson>> = _lecciones
 
@@ -75,7 +81,7 @@ class LessonsViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _cargando.value = true
             try {
-                val listaCompleta = mutableListOf<Lesson>()
+                val mapCompleto = mutableMapOf<Int, Lesson>()
                 val langRef = db.collection("languages").document(langCode)
                 
                 val levelsSnapshot = langRef.collection("levels").get().await()
@@ -91,14 +97,20 @@ class LessonsViewModel(application: Application) : AndroidViewModel(application)
                             .collection("subtopics").document(subtopicId)
                             .collection("lessons").get().await()
                         
-                        listaCompleta.addAll(lessonsSnapshot.toObjects(Lesson::class.java))
+                        for (lesson in lessonsSnapshot.toObjects(Lesson::class.java)) {
+                            val existing = mapCompleto[lesson.id]
+                            // Si hay duplicados en Firebase, nos quedamos con la que tenga más preguntas
+                            if (existing == null || lesson.questions.size > existing.questions.size) {
+                                mapCompleto[lesson.id] = lesson
+                            }
+                        }
                     }
                 }
 
-                if (listaCompleta.isEmpty()) {
+                if (mapCompleto.isEmpty()) {
                     _lecciones.value = AppData.getLessonsForLanguage(langCode)
                 } else {
-                    _lecciones.value = listaCompleta.sortedBy { it.id }
+                    _lecciones.value = mapCompleto.values.sortedBy { it.id }
                 }
             } catch (e: Exception) {
                 Log.e("LessonsViewModel", "Error al cargar jerarquía para $langCode", e)
@@ -126,6 +138,62 @@ class LessonsViewModel(application: Application) : AndroidViewModel(application)
             } finally {
                 _cargando.value = false
             }
+        }
+    }
+
+    private suspend fun inyectarDatosFirebase() {
+        try {
+            val langCode = "en"
+            val levelId = "BEGINNER" // Usando tu estructura existente
+            val subtopicId = "general" // Como pediste, inyectamos en 'general'
+            
+            val langRef = db.collection("languages").document(langCode)
+            
+            // Nivel (usando merge para no borrar tus otros datos)
+            langRef.collection("levels").document(levelId).set(
+                mapOf("id" to levelId, "name" to "Principiante (A1)"),
+                com.google.firebase.firestore.SetOptions.merge()
+            ).await()
+            
+            // Subtopic (usando merge)
+            langRef.collection("levels").document(levelId)
+                .collection("subtopics").document(subtopicId).set(
+                    mapOf("id" to subtopicId, "title" to "Etapa 1"),
+                    com.google.firebase.firestore.SetOptions.merge()
+                ).await()
+            
+            val genericQuestions = listOf(
+                Question(1, "¿Cómo se dice 'Hola'?", listOf("Hello", "Bye", "Please"), "Hello"),
+                Question(2, "¿Cómo se dice 'Adiós'?", listOf("Thanks", "Goodbye", "Water"), "Goodbye"),
+                Question(3, "¿Cómo se dice 'Por favor'?", listOf("Coffee", "Please", "Friend"), "Please"),
+                Question(4, "¿Cómo se dice 'Gracias'?", listOf("Thank you", "House", "Car"), "Thank you"),
+                Question(5, "¿Cómo se dice 'Agua'?", listOf("Food", "Water", "Hello"), "Water"),
+                Question(6, "¿Cómo se dice 'Café'?", listOf("Coffee", "Bye", "Please"), "Coffee"),
+                Question(7, "¿Cómo se dice 'Amigo'?", listOf("Thanks", "Goodbye", "Friend"), "Friend"),
+                Question(8, "¿Cómo se dice 'Casa'?", listOf("Coffee", "House", "Friend"), "House"),
+                Question(9, "¿Cómo se dice 'Coche'?", listOf("Car", "House", "Water"), "Car"),
+                Question(10, "¿Cómo se dice 'Comida'?", listOf("Food", "Water", "Hello"), "Food")
+            )
+            
+            // Lecciones
+            val lessons = AppData.getLessonsForLanguage(langCode).map { lesson ->
+                val newQuestions = genericQuestions.map { q -> 
+                    q.copy(id = lesson.id * 100 + q.id) 
+                }
+                lesson.copy(questions = newQuestions)
+            }
+            
+            for (lesson in lessons) {
+                langRef.collection("levels").document(levelId)
+                    .collection("subtopics").document(subtopicId)
+                    .collection("lessons").document(lesson.id.toString())
+                    .set(lesson).await()
+            }
+            
+            Log.d("LessonsViewModel", "Datos inyectados correctamente a Firebase")
+            cargarLeccionesDesdeFirebase("en")
+        } catch(e: Exception) {
+            Log.e("LessonsViewModel", "Error inyectando datos", e)
         }
     }
 }
